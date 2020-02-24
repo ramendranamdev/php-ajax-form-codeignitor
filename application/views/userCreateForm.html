@@ -1,0 +1,141 @@
+<!-- Modal -->
+<div class="modal fade" id="userCreateForm" tabindex="-1" role="dialog" aria-labelledby="exampleModalLabel" aria-hidden="true">
+    <div class="modal-dialog" role="document">
+      <div class="modal-content">
+        
+        <div class="modal-header">
+            <h5 class="modal-title" id="exampleModalLabel">
+              Create new user
+            </h5>
+          <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+            <span aria-hidden="true">&times;</span>
+          </button>
+        </div>
+        
+        <div class="modal-body">
+            <div class="container">
+                <form method='POST' action="javascript:void('#')" id="createUser" name="createUserForm" onsubmit="submitCreateForm()" >
+                    <div class="form-group">
+                        <label for="">Name</label>
+                        <input type="text" name="name" class="form-control">
+                    </div>
+                    <div class="form-group">
+                        <label for="">Email</label>
+                        <input type="email" name="email" class="form-control">
+                    </div>
+                    <div class="form-group">
+                        <label for="">Password</label>
+                        <input type="password" name="password" autocomplete="********" class="form-control">
+                    </div>
+                    <div class="form-group">
+                        <input type="submit" value="submit" class="form-control">
+                    </div>
+    
+                    <div id="responseHandler"></div>
+                </form>
+            </div>
+        </div>
+        
+        <!-- <div class="modal-footer">
+          <button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>
+          <button type="button" class="btn btn-primary">Save changes</button> -->
+        </div>
+
+      </div>
+    </div>
+  </div>
+
+
+<script>
+
+    
+  var data = new Array();
+
+    function initDataArray(){
+
+      $.ajax({
+        type : "GET",
+        url : "getData",
+        async : true
+      })
+      .done((result)=>{
+        data = JSON.parse(result);
+        // alert(data);
+        console.log(data);
+      })
+      .fail((result)=>{
+        alert("No Data");
+      });
+
+    }
+
+    $(document).ready(function(){
+      initDataArray();
+
+       $("#userCreateForm").on('hidden.bs.modal', function(){
+        clearCreateForm();
+      });
+
+    });
+
+    function submitCreateForm(){
+      // initDataArray();
+        $.ajax({
+            type : "POST",
+            url : "submit",
+            data : $('#createUser').serialize(),
+            async : true
+        })
+        .done( (result)=>{
+
+          var response = new Array();
+          response.push(JSON.parse(result));
+          $('#responseHandler').html(response[0]['successString']);
+          // console.log("GOOD");
+          var form = document.forms.createUserForm;
+          var n = form.elements.name.value;
+          var e = form.elements.email.value;
+          var p = form.elements.password.value; 
+          var id = response[0]['row_id'];
+          data.push([id,n,e,p]);
+          // console.log(data);
+
+          var table = $('#indexTable').DataTable();
+          // console.log('Table Initiated');
+          table.clear( );
+          // console.log('Cleared');
+          for (var k = 0; k < data.length; k++){
+                table.row.add(data[k]);
+                // console.log('Data Added : ' +data[k]);
+          }
+          table.draw();
+          // console.log('Table redrawn');
+
+        })
+        .fail((result)=>{
+          alert("Failed");
+        });
+    }
+
+    function next(){
+      var res = confirm("Do you want to add more user !");
+
+      if(res){
+        clearCreateForm();
+      }else{
+        clearCreateForm();
+        $('#userCreateFormButton').click();
+      }
+
+    }
+
+    function clearCreateForm(){
+      $('#responseHandler').html("");   
+      var form = document.forms.createUserForm;
+      form.elements.name.value = "";
+      form.elements.email.value = "";
+      form.elements.password.value = "";   
+    }
+
+
+</script>
